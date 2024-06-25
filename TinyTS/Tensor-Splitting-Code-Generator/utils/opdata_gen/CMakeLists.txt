@@ -1,0 +1,10 @@
+project(cmake_proj)
+include_directories(".", "./inc/", "./inc/tensorflow")
+add_library(ReQuantLib src/tensorflow/quantization_util.cc)
+
+add_executable(calc_op_data_conv "./src/calc_conv.cc")
+add_executable(calc_op_data_dwconv "./src/calc_dwconv.cc")
+add_executable(calc_op_data_add "./src/calc_add.cc")
+target_link_libraries(calc_op_data_conv ReQuantLib)
+target_link_libraries(calc_op_data_dwconv ReQuantLib)
+target_link_libraries(calc_op_data_add ReQuantLib)

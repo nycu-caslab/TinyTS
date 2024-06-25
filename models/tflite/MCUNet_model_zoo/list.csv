@@ -1,0 +1,9 @@
+0_MW5,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/mcunet-5fps_vww.tflite
+1_MW10,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/mcunet-10fps_vww.tflite
+2_MW320,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/mcunet-320kb-1mb_vww.tflite
+3_IM5,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/mcunet-5fps_imagenet.tflite
+4_IM10,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/mcunet-10fps_imagenet.tflite
+5_IM256,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/mcunet-256kb-1mb_imagenet.tflite
+6_IM320,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/mcunet-320kb-1mb_imagenet.tflite
+7_MBV2,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/mbv2-w0.35-r144_imagenet.tflite
+8_MP,https://hanlab18.mit.edu/projects/tinyml/mcunet/release/proxyless-w0.3-r176_imagenet.tflite

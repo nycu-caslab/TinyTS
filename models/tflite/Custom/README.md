@@ -1,0 +1,2 @@
+# Your Custom Models
+You can directory put your custom models here. Or format the name and download link of your model in list.csv, and then the `models/prepare_tflite_models.py` script will prepare the model directory for you.

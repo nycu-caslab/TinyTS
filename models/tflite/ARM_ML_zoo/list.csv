@@ -1,0 +1,7 @@
+ad_micronet_large,https://github.com/ARM-software/ML-zoo/raw/master/models/anomaly_detection/micronet_large/tflite_int8/ad_large_int8.tflite?download=
+kws_cnn_l,https://github.com/ARM-software/ML-zoo/raw/master/models/keyword_spotting/cnn_large/model_package_tf/model_archive/TFLite/tflite_int8/cnn_l_quantized.tflite?download=
+kws_ds_cnn_l,https://github.com/ARM-software/ML-zoo/raw/master/models/keyword_spotting/ds_cnn_large/model_package_tf/model_archive/TFLite/tflite_int8/ds_cnn_l_quantized.tflite?download=
+kws_micronet_l,https://github.com/ARM-software/ML-zoo/raw/master/models/keyword_spotting/micronet_large/tflite_int8/kws_micronet_l.tflite?download=
+vww_micronet_vww2,https://github.com/ARM-software/ML-zoo/raw/master/models/visual_wake_words/micronet_vww2/tflite_int8/vww2_50_50_INT8.tflite?download=
+vww_micronet_vww3,https://github.com/ARM-software/ML-zoo/raw/master/models/visual_wake_words/micronet_vww3/tflite_int8/vww3_128_128_INT8.tflite?download=
+vww_micronet_vww4,https://github.com/ARM-software/ML-zoo/raw/master/models/visual_wake_words/micronet_vww4/tflite_int8/vww4_128_128_INT8.tflite?download=

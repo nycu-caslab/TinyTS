@@ -1,0 +1,11 @@
+__pycache__/
+ref/
+.vscode/
+test_program/git/
+cmake_proj/build
+dev/envs/MLPerf_liu/BUILD
+dev/models
+*.csv
+*.png
+*_bak*/
+utils/opdata_gen/build/
