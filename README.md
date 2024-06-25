@@ -140,3 +140,17 @@ cd TinyTS/runtime
 cp -r ../../models/ts_gen_evict_in/MCUNet_model_zoo/3_IM5/DF_2/* .
 mbed compile -f --sterm --baud 115200
 ```
+# Citation
+If you use TinyTS in your research, please cite our paper in HPCA. Thank you!
+```
+@INPROCEEDINGS{10476479,
+  author={Liu, Yu-Yuan and Zheng, Hong-Sheng and Fang Hu, Yu and Hsu, Chen-Fong and Yeh, Tsung Tai},
+  booktitle={2024 IEEE International Symposium on High-Performance Computer Architecture (HPCA)}, 
+  title={TinyTS: Memory-Efficient TinyML Model Compiler Framework on Microcontrollers}, 
+  year={2024},
+  volume={},
+  number={},
+  pages={848-860},
+  keywords={Schedules;Tensors;Runtime;Microcontrollers;Computational modeling;Source coding;Random access memory;TinyML;Deep Neural Network;Compiler;AIoT},
+  doi={10.1109/HPCA57654.2024.00070}}
+```
