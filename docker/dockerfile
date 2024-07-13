@@ -26,8 +26,11 @@ RUN    [ "$(uname -m)" = "aarch64" ] && \
 
 # Configure Conda
 RUN    conda init bash \
-    && conda update -y conda \
-    && conda install -y python=3.7
+    && conda update -y conda 
+
+# Create abd Setup venv
+RUN    conda create -n TinyTS python=3.7 && \
+        echo "conda activate TinyTS" >> ~/.bashrc
 
 # Install mbed toolchain: Install & Configure Mbed-cli
 RUN pip install mbed-cli \
