@@ -33,11 +33,11 @@ RUN    conda create -n TinyTS python=3.7 && \
         echo "conda activate TinyTS" >> ~/.bashrc
 
 # Install mbed toolchain: Install & Configure Mbed-cli
-RUN pip install mbed-cli \
-    && pip install -r mbedos_requirements.txt \
-    && mbed config -G GCC_ARM_PATH /TinyTS/docker/gcc-arm-none-eabi-10.3-2021.10/bin/ \
-    && mbed config -G TOOLCHAIN GCC_ARM \
-    && mbed config -G TARGET detect
+RUN  /TinyTS/docker/miniconda/envs/TinyTS/bin/python -m pip install mbed-cli \
+    && /TinyTS/docker/miniconda/envs/TinyTS/bin/python -m pip install -r mbedos_requirements.txt \
+    && /TinyTS/docker/miniconda/envs/TinyTS/bin/python -m mbed config -G MBED_GCC_ARM_PATH /TinyTS/docker/gcc-arm-none-eabi-10.3-2021.10/bin/ \
+    && /TinyTS/docker/miniconda/envs/TinyTS/bin/python -m mbed config -G TOOLCHAIN GCC_ARM \
+    && /TinyTS/docker/miniconda/envs/TinyTS/bin/python -m mbed config -G TARGET detect
 
 # Ref:https://github.com/ARMmbed/mbed-os/blob/72f27cee92a4bdafa30513f732e007ba635dc93f/docker_images/mbed-os-env/Dockerfile#L67
 # Install arm-none-eabi-gcc

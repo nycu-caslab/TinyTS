@@ -89,6 +89,11 @@ The following command run a container for runing TinyTS's scripts and using mbed
 ```
 bash docker_run.sh
 ```
+## Mount dev board
+After running TinyTS container, we need to manually mount dev board to flash program. Take NUCLEO_F767ZI as an example:
+```
+mount -L NOD_F767ZI /TinyTS/mnt
+```
 
 # Usage
 ## Tensor-Splitting Model
