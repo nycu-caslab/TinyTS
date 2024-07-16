@@ -92,6 +92,7 @@ bash docker_run.sh
 ## Mount dev board
 After running TinyTS container, we need to manually mount dev board to flash program. Take NUCLEO_F767ZI as an example:
 ```
+mkdir /TinyTS/mnt
 mount -L NOD_F767ZI /TinyTS/mnt
 ```
 
