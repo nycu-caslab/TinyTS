@@ -1,3 +1,32 @@
+# Modified TinyTS Tutorial (2025/8 updated)
+
+## Prerequisite
+
+- Install flatc compiler
+    ```bash
+    sudo apt-get install flatbuffers-compiler
+    ```
+
+## Usage
+
+1. Put your tflite model at `./TinyTS/models/tflite/Custom` folder
+    ![image](https://hackmd.io/_uploads/BknKb3o4xl.png)
+2. Modify `self.splittables` and `self.end_ids` in `./TinyTS_modified/TinyTS/Tensor-Splitting-Graph-Rewriter/AutoSplit.py` to choose the id of operators you want to split (via [netron](https://netron.app/))
+    - Currently support `Conv2D`, `DepthwiseConv2D`, `Pad`, `Add`
+
+    ![image](https://hackmd.io/_uploads/ryIFJhjExx.png)
+    ![image](https://hackmd.io/_uploads/H1kjgnsNee.png)
+
+3. Run TinyTS compiler(graph rewriter)
+
+    ```bash
+    cd TinyTS
+    bash scripts/0_prepare_env.sh
+    ```
+4. TinyTS model is generated at `./TinyTS/models/ts_model/Custom`
+    ![image](https://hackmd.io/_uploads/SkmHz2sVlx.png)
+    - Use `BF_1` and `DF_1` to prevent possible error
+
 # TinyTS: Memory-Efficient TinyML Model Compiler Framework on Microcontrollers
 Yu-Yuan Liu, Hong-Sheng Zheng, Yu-Fang Hu, Chen-Fong Hsu, Tsung Tai Yeh
 
