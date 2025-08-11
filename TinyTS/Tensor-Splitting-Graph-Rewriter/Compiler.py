@@ -46,15 +46,12 @@ new_opcodes = copy.deepcopy(opcodes)
 
 has_split = False
 has_concat = False
-has_pad = False
 
 for opcode in opcodes:
     if opcode.get('deprecated_builtin_code',0) == 2:
         has_concat = True
     elif opcode.get('deprecated_builtin_code',0) ==49:
         has_split = True
-    elif opcode.get('deprecated_builtin_code',0) == 34:
-        has_pad = True
 
 if has_concat == False:
     new_opcodes.append({
@@ -68,13 +65,6 @@ if has_split == False:
         "version": 1,
         "builtin_code": "SPLIT"
         })
-if has_pad == False:
-    new_opcodes.append({
-        "deprecated_builtin_code": 34,
-        "version": 1,
-        "builtin_code": "PAD"
-        })
-
 
 
 new_model = copy.deepcopy(model)
