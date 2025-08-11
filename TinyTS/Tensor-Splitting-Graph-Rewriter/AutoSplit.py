@@ -19,6 +19,11 @@ class Splitter:
     def __init__(self,ori_graph:Graph, split_height:int):
         self.padding_param_tensors = {}
         self.ori_graph = ori_graph
+        self.end_ids = []
+        self.current_ids = []
+        self.splittables = []
+        self.has_pad_height = False
+        self.pad_height = [0, 0]
         self.split_height = split_height
         self.opcodes =  copy.deepcopy(ori_graph.opcodes)
         self.tensors = copy.deepcopy(ori_graph.tensors)
@@ -51,31 +56,125 @@ class Splitter:
 
         # Currently assume it's splittable from the root of the graph
         start_id = self.traverse_til_splittable(self.ori_graph.root_op_id)
-        while( start_id is not None):
-            # get splittable block
-            end_id, splittables = self.traverse_til_not_splittable(start_id, [])
+        print("start_id:", start_id)
+        # while( start_id is not None):
+        #     # get splittable block
+        #     end_id, splittables = self.traverse_til_not_splittable(start_id, [])
+        #     print("end_id:", end_id)
+        #     print("current_opids:", self.current_ids)
+        #     print("splittables:", splittables)
+        #     # print("end_ids:", self.end_ids)
 
-            input_tile_size = self.split_height
-            output_tile_size = self.split_height
+        #     input_tile_size = self.split_height
+        #     output_tile_size = self.split_height
 
-            # TODO split block input
-            self.split_block_input(start_id, input_tile_size)
+        #     # TODO split block input
+        #     self.split_block_input(start_id, input_tile_size)
 
-            # start split
-            for op in splittables:
-                self.split_one_node(op, input_tile_size, output_tile_size)
+        #     # start split
+        #     for op in splittables:
+        #         self.split_one_node(op, input_tile_size, output_tile_size)
 
-            # TODO concat block output
+        #     # TODO concat block output
+        #     self.concat_block_output(end_id)
+
+        #     # start_id = self.traverse_til_splittable(end_id)
+        #     # print("To avoid error, now compiler splits only one block.")
+        #     start_id = self.traverse_til_end(end_id)
+                # get splittable block
+        self.traverse_til_not_splittable(start_id)
+        print("current_opids:", self.current_ids)
+        print("splittables:", self.splittables)
+        print("end_ids:", self.end_ids)
+        input_tile_size = self.split_height
+        output_tile_size = self.split_height       
+        
+        # Ultraface custom split
+        self.splittables = [0,1,2,3,4,5,6]
+        self.end_ids = [6]
+        
+        # Add non-visited op into new_operators
+        for end_id in self.end_ids:
+            self.traverse_til_end(end_id)
+        # Split block input
+        self.split_block_input(start_id, input_tile_size)
+        # Start split
+        for op in self.splittables:
+            self.split_one_node(op, input_tile_size, output_tile_size)
+        # Concat block output
+        for end_id in self.end_ids:
             self.concat_block_output(end_id)
 
-            # start_id = self.traverse_til_splittable(end_id)
-            # print("To avoid error, now compiler splits only one block.")
-            start_id = self.traverse_til_end(end_id)
 
+        # # get splittable block
+        # self.traverse_til_not_splittable(start_id)
+        # # print("current_opids:", self.current_ids)
+        # print("splittables:", self.splittables)
+        # print("end_ids:", self.end_ids)
+        # input_tile_size = self.split_height
+        # output_tile_size = self.split_height       
+        
+        # # # Add non-visited op into new_operators
+        # # for end_id in self.end_ids:
+        # #     self.traverse_til_end(end_id)
+        # # Split block input
+        # self.split_block_input(start_id, input_tile_size)
+        # # Start split
+        # for op in self.splittables:
+        #     self.split_one_node(op, input_tile_size, output_tile_size)
+        # # Concat block output
+        # for end_id in self.end_ids:
+        #     self.concat_block_output(end_id)
+        
+        # # Find next block
+        # start_ids = []
+        # for end_id in self.end_ids:
+        #     start_id = self.traverse_til_splittable(end_id)
+        #     if start_id is not None and start_id not in start_ids:
+        #         start_ids.append(start_id)
+        # # print("start_ids:", start_ids)
+        # while start_ids != []:
+        #     print("start_ids:", start_ids)
+        #     self.end_ids = []
+        #     self.splittables = []
+        #     for start_id in start_ids:
+        #         self.traverse_til_not_splittable(start_id)
+        #     # print("current_opids:", self.current_ids)
+        #     print("splittables:", self.splittables)
+        #     print("end_ids:", self.end_ids)
+        #     input_tile_size = self.split_height
+        #     output_tile_size = self.split_height
+        #     for op in start_ids:
+        #         self.split_block_input(op, input_tile_size)
+        #     # Start split
+        #     for op in self.splittables:
+        #         self.split_one_node(op, input_tile_size, output_tile_size)
+            
+        #     # ### Yunet custom split
+        #     # for end_id in self.end_ids:
+        #     #     self.traverse_til_end(end_id)
+        #     # ###
+            
+        #     # Concat block output
+        #     for end_id in self.end_ids:
+        #         self.concat_block_output(end_id)
+
+        #     # ### Yunet custom
+        #     # break
+        #     # ###
+            
+        #     # Find next block
+        #     start_ids = []
+        #     for end_id in self.end_ids:
+        #         start_id = self.traverse_til_splittable(end_id)
+        #         if start_id is not None and start_id not in start_ids:
+        #             start_ids.append(start_id)
+
+        
         new_graph = Graph ( self.new_operators, self.tensors, self.buffers,
                             self.opcodes, [self.ori_graph.in_tensor_id], self.ori_graph.outputs, self.ori_graph.exec_order)
 
-        new_graph.recycle_tensors_buffers()
+        # new_graph.recycle_tensors_buffers()
 
         return new_graph.export()
 
@@ -111,21 +210,26 @@ class Splitter:
                 return result
         return None
 
-    def traverse_til_not_splittable(self,current_opid,splittables):
+    def traverse_til_not_splittable(self,current_opid):
+        self.current_ids.append(current_opid)
         for parent in self.nodes[current_opid].node.parents:
             if self.nodes[parent].visited == False:
                 return None
         self.nodes[current_opid].visited = True
-        splittables.append(current_opid)
+        if current_opid not in self.splittables:
+            self.splittables.append(current_opid)
         for child in self.nodes[current_opid].node.children:
             # check if it is splittable op
             if self.nodes[child].node.info.get("opcode_index",0) in self.splittable_opcode_idxes.values():
-                result = self.traverse_til_not_splittable(child,splittables)
+                result = self.traverse_til_not_splittable(child)
                 if result is not None:
                     return result
             else:
-                splittables.append(child)
-                return (child, splittables)
+                if child not in self.splittables:
+                    self.splittables.append(child)
+                if child not in self.end_ids:
+                    self.end_ids.append(child)
+                # return (child, splittables)
         return None
 
     def split_tensor(self, tensor_id_in):
@@ -171,17 +275,24 @@ class Splitter:
         opcode_idx = self.nodes[opid].node.info.get("opcode_index",0)
         if opcode_idx == self.splittable_opcode_idxes.get(0, -1):
             self.split_add(opid, output_split)
+            self.has_pad_height = False
+            self.pad_height = [0, 0]
         elif opcode_idx == self.splittable_opcode_idxes.get(3 , -1):
             self.split_conv(opid, input_split, output_split)
+            self.has_pad_height = False
+            self.pad_height = [0, 0]
         elif opcode_idx == self.splittable_opcode_idxes.get(4 , -1):
             self.split_dwconv(opid, input_split, output_split)
+            self.has_pad_height = False
+            self.pad_height = [0, 0]
         elif opcode_idx == self.splittable_opcode_idxes.get(34, -1):
             self.split_pad(opid, output_split)
 
     def split_pad(self, opid, output_split):
         info = self.nodes[opid].node.info
         self.split_tensor_by_n(info['outputs'][0], output_split)
-
+        for i in range(len(self.split_tensor_table[info['outputs'][0]])-len(self.split_tensor_table[info['inputs'][0]])):
+            del self.split_tensor_table[info['outputs'][0]][-1]
         inputs = info['inputs']
         outputs = info['outputs']
 
@@ -192,10 +303,53 @@ class Splitter:
         else:
             split_op_id = len(self.nodes)
             i_len = len(self.split_tensor_table[inputs[0]])
+            i_count = 0
+            # print("i_len:", i_len)
+            # print(self.split_tensor_table[info['outputs'][0]])
             for a, b, c in zip(self.split_tensor_table[inputs[0]],
                                [inputs[1] for i in range(i_len)],
                                self.split_tensor_table[outputs[0]]):
                 new_op_info = copy.deepcopy(info)
+                # print("a:", self.tensors[a])
+                # print("b:", self.tensors[b])
+                # print("c:", self.tensors[c])
+                paddings_buffer = self.buffers[self.tensors[b]['buffer']]['data']
+                paddings = self.byte_list_to_int_list(paddings_buffer)
+                # print("paddings: ", paddings)
+                
+                # check if height dimension padding != 0
+                if(paddings[2] != 0 or paddings[3] != 0):
+                    self.has_pad_height = True
+                    self.pad_height[0] = paddings[2]
+                    self.pad_height[1] = paddings[3]
+                    if i_count == 0:
+                        self.tensors[c]['shape'][1] = self.tensors[a]['shape'][1] + paddings[2]
+                        paddings[3] = 0
+                    elif i_count == i_len - 1:
+                        paddings[2] = 0
+                        self.tensors[c]['shape'][1] = self.tensors[a]['shape'][1] + paddings[3]
+                    else:
+                        paddings[2] = 0
+                        paddings[3] = 0
+                    pad_buffer_info = {
+                        "data": self.int_list_to_byte_list(paddings)
+                    }
+                    pad_tensor_info = {
+                        "shape": [
+                            4,2
+                        ],
+                        "type": "INT32",
+                        "buffer": len(self.buffers),
+                        "name": "padding_%d_%d" % (paddings[2], paddings[3]),
+                        "quantization": {
+                        }
+                    }
+                    self.buffers.append(pad_buffer_info)
+                    self.tensors.append(pad_tensor_info)
+                    b = len(self.tensors) - 1
+
+                # print("paddings: ", paddings)
+
                 new_op_info['inputs'] = [a, b]
                 new_op_info['outputs'] = [c]
                 op = Node(new_op_info, split_op_id)
@@ -204,6 +358,7 @@ class Splitter:
                 self.new_operators.append(new_op_info)
                 self.nodes[opid].split_id.append(split_op_id)
                 split_op_id+=1
+                i_count += 1
 
     def split_conv(self, opid, input_split, output_split):
         info = self.nodes[opid].node.info
@@ -261,24 +416,157 @@ class Splitter:
                         in_y = in_y_origin + h
                         if in_y >= 0 and in_y < in_shape[1] and (in_y//input_split) not in required:
                             required.append((in_y//input_split))
+                if self.has_pad_height:
+                    if self.pad_height[0] != 0:
+                        if required[0] == 0:
+                            for i in range(self.pad_height[0]):
+                                del required[0]
+                        for i, val in enumerate(required):
+                            required[i] -= self.pad_height[0]
+                    # if self.pad_height[1] != 0 and required[-1] == len(self.split_tensor_table[inputs[0]]):
+                    #     for i in range(self.pad_height[1]):
+                    #         del required[-1]
+                # print("required: ", required)
+                # print("split_tensor_table length: ", len(self.split_tensor_table[inputs[0]]))
+                while required[-1] >= len(self.split_tensor_table[inputs[0]]):
+                    del required[-1]
+
 
                 # inputs
+                split_tensor_count = 0
                 for in_y in required:
                     new_inputs.append(self.split_tensor_table[inputs[0]][in_y])
+                    split_tensor_count += 1
 
-                padding_param_tensor = self.get_padding_param_tensor(split_padding_H, paddings_W)
-                if (len(inputs) == 4):
-                    new_op_info['inputs'][3] = padding_param_tensor
-                    new_op_info['inputs'] += new_inputs
+                if (split_tensor_count > 1):
+                    intermediate_tensor = copy.deepcopy(self.tensors[info['inputs'][0]])
+                    # intermediate_tensor['shape'][1] = split_tensor_count*output_split
+                    intermediate_tensor['shape'][1] = 0
+                    for i in range(split_tensor_count):
+                        intermediate_tensor['shape'][1] += self.tensors[new_inputs[i]]['shape'][1]
+                    self.tensors.append(intermediate_tensor)
+                    intermediate_tensor_id = len(self.tensors) - 1
+                    concat_op_info = {
+                        "opcode_index": self.get_opcode_index(2),
+                        "inputs": copy.deepcopy(new_inputs),
+                        "outputs": [intermediate_tensor_id],
+                        "builtin_options_type": "ConcatenationOptions",
+                        "builtin_options": {
+                            'axis': 1
+                        }
+                    }
+                    self.new_operators.append(concat_op_info)
+
+                    # Add padding op
+                    if info['builtin_options'].get('padding', 'SAME') == 'SAME' and (total_padding_H != 0 or total_padding_W != 0):
+                        pad_intermediate_tensor = copy.deepcopy(intermediate_tensor)
+                        
+                        padding = [0,0,0,0,1,1,0,0]
+                        padding[4] = paddings_W
+                        padding[5] = total_padding_W - paddings_W
+                        pad_intermediate_tensor['shape'][2] += total_padding_W
+                        if out_y == 0:
+                            padding[2] = paddings_H
+                            pad_intermediate_tensor['shape'][1] += paddings_H
+                        if out_y + output_split >= out_shape[1]:
+                            padding[3] = total_padding_H - paddings_H
+                            pad_intermediate_tensor['shape'][1] += total_padding_H - paddings_H
+                        pad_buffer_info={
+                            "data": self.int_list_to_byte_list(padding)
+                        }
+                        # pad_intermediate_tensor['shape'][2] += 2
+                        self.tensors.append(pad_intermediate_tensor)
+                        intermediate_tensor_id = len(self.tensors) - 1
+   
+                        pad_tensor_info = {
+                            "shape": [
+                                4,2
+                            ],
+                            "type": "INT32",
+                            "buffer": len(self.buffers),
+                            "name": "padding_%d_%d" % (0, 1),
+                            "quantization": {
+                            }
+                        }
+                        self.buffers.append(pad_buffer_info)
+                        self.tensors.append(pad_tensor_info)
+                        pad_op_info = {
+                            "opcode_index": self.get_opcode_index(34),
+                            "inputs": [intermediate_tensor_id-1, len(self.tensors)-1],
+                            "outputs": [intermediate_tensor_id],
+                            "builtin_options_type": "PadOptions",
+                            "builtin_options": {
+                            }
+                        }
+                        self.new_operators.append(pad_op_info)
+
+                    new_op_info['inputs'][0] = intermediate_tensor_id
                 else:
-                    new_op_info['inputs'] += [padding_param_tensor] + new_inputs
-                new_op_info['inputs'][0] = new_op_info['inputs'][4]
+                    # padding_param_tensor = self.get_padding_param_tensor(split_padding_H, paddings_W)
+                    # if (len(inputs) == 4):
+                    #     new_op_info['inputs'][3] = padding_param_tensor
+                    #     new_op_info['inputs'] += new_inputs
+                    # else:
+                        # new_op_info['inputs'] += [padding_param_tensor] + new_inputs
+                    # new_op_info['inputs'][0] = new_op_info['inputs'][4]
+                    
+                    # Add padding op
+                    if info['builtin_options'].get('padding', 'SAME') == 'SAME' and (total_padding_H != 0 or total_padding_W != 0):
+                        pad_intermediate_tensor = copy.deepcopy(self.tensors[info['inputs'][0]])
+                        # pad_intermediate_tensor['shape'][1] = split_tensor_count*output_split
+                        pad_intermediate_tensor['shape'][1] = self.tensors[new_inputs[0]]['shape'][1]
+                        
+                        padding = [0,0,0,0,1,1,0,0]
+                        padding[4] = paddings_W
+                        padding[5] = total_padding_W - paddings_W
+                        pad_intermediate_tensor['shape'][2] += total_padding_W
+                        if out_y == 0:
+                            padding[2] = paddings_H
+                            pad_intermediate_tensor['shape'][1] += paddings_H
+                        if out_y + output_split >= out_shape[1]:
+                            padding[3] = total_padding_H - paddings_H
+                            pad_intermediate_tensor['shape'][1] += total_padding_H - paddings_H
+                        pad_buffer_info={
+                            "data": self.int_list_to_byte_list(padding)
+                        }
+                        # pad_intermediate_tensor['shape'][2] += 2
+                        self.tensors.append(pad_intermediate_tensor)
+                        intermediate_tensor_id = len(self.tensors) - 1
+   
+                        pad_tensor_info = {
+                            "shape": [
+                                4,2
+                            ],
+                            "type": "INT32",
+                            "buffer": len(self.buffers),
+                            "name": "padding_%d_%d" % (0, 1),
+                            "quantization": {
+                            }
+                        }
+                        self.buffers.append(pad_buffer_info)
+                        self.tensors.append(pad_tensor_info)
+                        pad_op_info = {
+                            "opcode_index": self.get_opcode_index(34),
+                            "inputs": [new_inputs[0], len(self.tensors)-1],
+                            "outputs": [intermediate_tensor_id],
+                            "builtin_options_type": "PadOptions",
+                            "builtin_options": {
+                            }
+                        }
+                        self.new_operators.append(pad_op_info)
+                        
+                        new_op_info['inputs'][0] = intermediate_tensor_id
+                    else:
+                        new_op_info['inputs'] += new_inputs
+                        new_op_info['inputs'][0] = new_op_info['inputs'][3]
+                        del new_op_info['inputs'][3]
+                
 
                 # outputs
                 new_op_info['outputs'] = [self.split_tensor_table[outputs[0]][int(out_y)//input_split]]
                 # for out_inner_y in range(guard_inner_y):
                 #     new_op_info['outputs'].append(self.split_tensor_table[outputs[0]][out_y + out_inner_y])
-
+                new_op_info['builtin_options']['padding'] = 'VALID'
                 self.new_operators.append(new_op_info)
                 op = Node(new_op_info, split_op_id)
                 self.nodes.append(SplitterNode(op))
@@ -341,28 +629,156 @@ class Splitter:
                         in_y = in_y_origin + h
                         if in_y >= 0 and in_y < in_shape[1] and (in_y//input_split) not in required:
                             required.append((in_y//input_split))
-
-
+                if self.has_pad_height:
+                    if self.pad_height[0] != 0:
+                        if required[0] == 0:
+                            for i in range(self.pad_height[0]):
+                                del required[0]
+                        for i, val in enumerate(required):
+                            required[i] -= self.pad_height[0]
+                while required[-1] >= len(self.split_tensor_table[inputs[0]]):
+                    del required[-1]
+                # print("required: ", required)
+                # print("split_tensor_table length: ", len(self.split_tensor_table[inputs[0]]))
+                
                 # inputs
+                split_tensor_count = 0
                 for in_y in required:
                     new_inputs.append(self.split_tensor_table[inputs[0]][in_y])
+                    split_tensor_count += 1
 
                 new_op_info = copy.deepcopy(new_op_info_base)
-                padding_param_tensor = self.get_padding_param_tensor(split_padding_H, paddings_W)
+                
+                if(split_tensor_count > 1):
+                    intermediate_tensor = copy.deepcopy(self.tensors[info['inputs'][0]])
+                    self.tensors.append(intermediate_tensor)
+                    # intermediate_tensor['shape'][1] = split_tensor_count*output_split
+                    intermediate_tensor['shape'][1] = 0
+                    for i in range(split_tensor_count):
+                        intermediate_tensor['shape'][1] += self.tensors[new_inputs[i]]['shape'][1]
+                    intermediate_tensor_id = len(self.tensors) - 1
+                    concat_op_info = {
+                        "opcode_index": self.get_opcode_index(2),
+                        "inputs": copy.deepcopy(new_inputs),
+                        "outputs": [intermediate_tensor_id],
+                        "builtin_options_type": "ConcatenationOptions",
+                        "builtin_options": {
+                            'axis': 1
+                        }
+                    }
+                    self.new_operators.append(concat_op_info)
 
-                if (len(inputs) == 4):
-                    new_op_info['inputs'][3] = padding_param_tensor
-                    new_op_info['inputs'] += new_inputs
+                    # Add padding op
+                    if info['builtin_options'].get('padding', 'SAME') == 'SAME' and (total_padding_H != 0 or total_padding_W != 0):
+                        pad_intermediate_tensor = copy.deepcopy(intermediate_tensor)
+                        
+                        padding = [0,0,0,0,1,1,0,0]
+                        padding[4] = paddings_W
+                        padding[5] = total_padding_W - paddings_W
+                        pad_intermediate_tensor['shape'][2] += total_padding_W
+                        if out_y == 0:
+                            padding[2] = paddings_H
+                            pad_intermediate_tensor['shape'][1] += paddings_H
+                        if out_y + output_split >= out_shape[1]:
+                            padding[3] = total_padding_H - paddings_H
+                            pad_intermediate_tensor['shape'][1] += total_padding_H - paddings_H
+                        pad_buffer_info={
+                            "data": self.int_list_to_byte_list(padding)
+                        }
+                        # pad_intermediate_tensor['shape'][2] += 2
+                        self.tensors.append(pad_intermediate_tensor)
+                        intermediate_tensor_id = len(self.tensors) - 1
+   
+                        pad_tensor_info = {
+                            "shape": [
+                                4,2
+                            ],
+                            "type": "INT32",
+                            "buffer": len(self.buffers),
+                            "name": "padding_%d_%d" % (0, 1),
+                            "quantization": {
+                            }
+                        }
+                        self.buffers.append(pad_buffer_info)
+                        self.tensors.append(pad_tensor_info)
+                        pad_op_info = {
+                            "opcode_index": self.get_opcode_index(34),
+                            "inputs": [intermediate_tensor_id-1, len(self.tensors)-1],
+                            "outputs": [intermediate_tensor_id],
+                            "builtin_options_type": "PadOptions",
+                            "builtin_options": {
+                            }
+                        }
+                        self.new_operators.append(pad_op_info)
+
+
+                    new_op_info['inputs'][0] = intermediate_tensor_id
                 else:
-                    new_op_info['inputs'] += [padding_param_tensor] + new_inputs
-                new_op_info['inputs'][0] = new_op_info['inputs'][4]
+                    # padding_param_tensor = self.get_padding_param_tensor(split_padding_H, paddings_W)
+                    # if (len(inputs) == 4):
+                    #     new_op_info['inputs'][3] = padding_param_tensor
+                    #     new_op_info['inputs'] += new_inputs
+                    # else:
+                    #     new_op_info['inputs'] += [padding_param_tensor] + new_inputs
+                    # new_op_info['inputs'][0] = new_op_info['inputs'][4]
+                    
+                    # Add padding op
+                    if info['builtin_options'].get('padding', 'SAME') == 'SAME' and (total_padding_H != 0 or total_padding_W != 0):
+                        pad_intermediate_tensor = copy.deepcopy(self.tensors[info['inputs'][0]])
+                        # pad_intermediate_tensor['shape'][1] = split_tensor_count*output_split
+                        pad_intermediate_tensor['shape'][1] = self.tensors[new_inputs[0]]['shape'][1]
 
-                # outputs
-                # for out_inner_y in range(guard_inner_y):
-                    # new_op_info['outputs'].append(self.split_tensor_table[outputs[0]][out_y + out_inner_y])
+
+                        padding = [0,0,0,0,1,1,0,0]
+                        padding[4] = paddings_W
+                        padding[5] = total_padding_W - paddings_W
+                        pad_intermediate_tensor['shape'][2] += total_padding_W
+                        if out_y == 0:
+                            padding[2] = paddings_H
+                            pad_intermediate_tensor['shape'][1] += paddings_H
+                        if out_y + output_split >= out_shape[1]:
+                            padding[3] = total_padding_H - paddings_H
+                            pad_intermediate_tensor['shape'][1] += total_padding_H - paddings_H
+                        pad_buffer_info={
+                            "data": self.int_list_to_byte_list(padding)
+                        }
+                        # pad_intermediate_tensor['shape'][2] += 2
+                        self.tensors.append(pad_intermediate_tensor)
+                        intermediate_tensor_id = len(self.tensors) - 1
+   
+                        pad_tensor_info = {
+                            "shape": [
+                                4,2
+                            ],
+                            "type": "INT32",
+                            "buffer": len(self.buffers),
+                            "name": "padding_%d_%d" % (0, 1),
+                            "quantization": {
+                            }
+                        }
+                        self.buffers.append(pad_buffer_info)
+                        self.tensors.append(pad_tensor_info)
+                        pad_op_info = {
+                            "opcode_index": self.get_opcode_index(34),
+                            "inputs": [new_inputs[0], len(self.tensors)-1],
+                            "outputs": [intermediate_tensor_id],
+                            "builtin_options_type": "PadOptions",
+                            "builtin_options": {
+                            }
+                        }
+                        self.new_operators.append(pad_op_info)
+                        
+                        new_op_info['inputs'][0] = intermediate_tensor_id
+                    else:
+                        new_op_info['inputs'] += new_inputs
+                        new_op_info['inputs'][0] = new_op_info['inputs'][3]
+                        del new_op_info['inputs'][3]
+                    # outputs
+                    # for out_inner_y in range(guard_inner_y):
+                    #     new_op_info['outputs'].append(self.split_tensor_table[outputs[0]][out_y + out_inner_y])
 
                 new_op_info['outputs'] = [self.split_tensor_table[outputs[0]][out_y//input_split]]
-
+                new_op_info['builtin_options']['padding'] = 'VALID'
                 self.new_operators.append(new_op_info)
                 op = Node(new_op_info, split_op_id)
                 self.nodes.append(SplitterNode(op))
@@ -381,7 +797,7 @@ class Splitter:
         elif len(outputs) != 1:
             raise "wrong output number"
         elif len(self.split_tensor_table[inputs[0]]) != len(self.split_tensor_table[inputs[1]]):
-            raise BaseException("split number of two operand is not equal")
+            raise BaseException("split number of two operand is not equal", opid, len(self.split_tensor_table[inputs[0]]), len(self.split_tensor_table[inputs[1]]))
         else:
             split_op_id = len(self.nodes)
             for a,b,c in zip(self.split_tensor_table[inputs[0]],
@@ -432,6 +848,7 @@ class Splitter:
 
     def concat_block_output(self, end_opid):
         info = self.nodes[end_opid].node.info
+        # print(self.split_tensor_table[info['inputs'][0]])
         new_op_info = {
             "opcode_index": self.get_opcode_index(2),
             "inputs": copy.deepcopy(self.split_tensor_table[info['inputs'][0]]),
@@ -591,4 +1008,13 @@ class Splitter:
             if(type(num) != int):
                 raise "int_list_to_byte_list: type error"
             out += [ b for b in (num).to_bytes(length=4, byteorder='little')]
+        return out
+    
+    def byte_list_to_int_list(self, bytes_list):
+        if len(bytes_list) % 4 != 0:
+            raise ValueError("byte_list_to_int_list: Invalid byte list length ", len(bytes_list))
+
+        out = []
+        for i in range(0, len(bytes_list), 4):
+            out.append(int.from_bytes(bytes_list[i:i+4], byteorder='little'))
         return out
